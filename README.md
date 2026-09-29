@@ -166,37 +166,44 @@ The original files are not deleted. They are renamed with the `.BAK` extension.
 
 After login, KDE Plasma recreates fresh configuration and cache files.
 
-## Other Troubleshooting Performed
+## If the Issue Persists
 
-Before isolating the problem to the user profile, several other possible causes were tested:
+If resetting the Plasma user configuration does not resolve the problem, continue with system-wide troubleshooting.
 
-- AMDGPU / graphics-related errors
-- Mesa and LLVM
-- Plasma package corruption
-- Software rendering
-- Different kernel version
-- Invalid custom udev rule
+Possible areas to investigate include:
 
-None of these resolved the Plasma crash.
+- GPU drivers and graphics stack
+- Mesa / LLVM
+- Broken or partially upgraded packages
+- Kernel regressions
+- Display manager issues
+- Third-party Plasma widgets or extensions
+- Custom udev rules
+- Disk or filesystem errors
 
-The key diagnostic result was:
+Useful commands include:
 
-```text
-Affected user  -> Plasma crashes
-New user       -> Plasma works
-Reset profile  -> Plasma works
+```bash
+journalctl -b -p err
 ```
 
-## Result
+```bash
+dmesg --level=err,warn
+```
 
-After resetting the Plasma configuration and cache:
+```bash
+dpkg --audit
+```
 
-- Plasma loaded normally
-- The black screen disappeared
-- The desktop and panel worked again
-- Dolphin stopped crashing as part of the broken session
+```bash
+systemctl --failed
+```
 
-Some Plasma-specific settings may need to be configured again, including:
+Avoid making multiple major system changes at once. Test one change at a time so the actual cause can be identified.
+
+## After Recovery
+
+Once Plasma is working again, some desktop-specific settings may need to be recreated manually, such as:
 
 - Panels
 - Widgets
@@ -204,26 +211,14 @@ Some Plasma-specific settings may need to be configured again, including:
 - Task Manager layout
 - Desktop layout
 
-## Root Cause
+Keep the `.BAK` files until the system has been stable for a while.
 
-The issue was isolated to the KDE Plasma user configuration or cached state.
+If everything works normally, the backup files can be removed later.
 
-The exact corrupted file or value was not identified.
+## Notes
 
-The invalid AMDGPU udev rule was a separate issue discovered during troubleshooting.
+This procedure is intended as a non-destructive recovery method.
 
-## Recommendation
+The original Plasma configuration is renamed rather than deleted, making it possible to inspect or restore individual settings if needed.
 
-If KDE Plasma suddenly stops loading:
-
-1. Check `plasmashell` status and logs
-2. Check for obvious system errors such as invalid udev rules
-3. Test with a newly created user
-4. If the new user works, reset the affected user's Plasma configuration before attempting more invasive repairs
-
-This can avoid unnecessary:
-
-- KDE reinstallation
-- GPU driver replacement
-- Kernel downgrade
-- Full operating system reinstall
+If a clean user profile also fails to load Plasma, the problem is more likely system-wide and should be investigated at the driver, package, kernel, or display-manager level.
